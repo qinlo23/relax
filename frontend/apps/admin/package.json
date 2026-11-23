@@ -1,0 +1,34 @@
+{
+  "name": "@kite/admin",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "type-check": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "2.3.2",
+    "axios": "^1.15.0",
+    "element-plus": "^2.13.7",
+    "pinia": "^3.0.4",
+    "vue": "^3.5.25",
+    "vue-router": "^5.0.4",
+    "@kite/contracts": "workspace:*",
+    "@kite/platform": "workspace:*",
+    "@kite/ui": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "@vitejs/plugin-vue": "^6.0.2",
+    "@vue/tsconfig": "^0.9.1",
+    "sass": "^1.99.0",
+    "typescript": "^6.0.2",
+    "unplugin-auto-import": "^21.0.0",
+    "unplugin-vue-components": "^32.0.0",
+    "vite": "^7.3.1",
+    "vue-tsc": "^3.2.6"
+  }
+}

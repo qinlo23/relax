@@ -1,0 +1,12 @@
+{
+  "name": "@kite/contracts",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "type-check": "vue-tsc --noEmit"
+  }
+}

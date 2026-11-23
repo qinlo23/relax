@@ -1,0 +1,23 @@
+{
+  "name": "@kite/ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    "./login-form": "./src/components/LoginForm.vue",
+    "./theme": "./src/theme/index.ts",
+    "./styles/*": "./src/styles/*",
+    "./assets/*": "./src/assets/*"
+  },
+  "scripts": {
+    "type-check": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@kite/contracts": "workspace:*",
+    "@kite/platform": "workspace:*"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.25",
+    "element-plus": "^2.13.7"
+  }
+}

@@ -11,7 +11,7 @@
 
 - `backend/`：Java 25、Spring Boot 4.1、Maven 多模块后端。`start/` 组装应用，`common/` 提供公共基础设施，`business/` 包含 `user`、`admin`、`ai`、`price`、`caishen` 等业务模块；废弃代码放在 `.rubbish/`。
 - 后端各模块使用 `src/main/java`、`src/main/resources` 和 `src/test/java` 存放源码、资源和测试；补充文档位于 `backend/.docs/`。
-- `frontend/`：Vue 3、TypeScript、Vite。`src/core/` 管理路由、API 和权限，`src/modules/` 按业务组织功能，`src/shared/` 存放公共组件、样式和资源，`tests/` 存放浏览器检查。
+- `frontend/`：Vue 3、TypeScript、Vite、pnpm workspace。`apps/web` 和 `apps/admin` 分别提供前台与后台，应用内部按 `core/modules/shared/layouts` 分层；`packages/contracts`、`packages/platform`、`packages/ui` 提供共享类型、认证请求和 UI，`tests/` 存放跨应用浏览器检查。
 - `backend/database/` 存放数据库脚本，`docker/` 存放各服务的 Compose 配置。
 
 ## 构建、测试与本地开发
@@ -24,10 +24,10 @@
 
 在 `frontend/` 中执行：
 
-- `npm ci`：按锁文件安装依赖；`npm run dev` 启动开发服务器，`/api` 默认代理到 `127.0.0.1:8080`。
-- `npm run type-check`：检查类型；`npm run build` 检查类型并构建生产资源。
-- `npm run preview -- --port 5179`：启动生产构建预览。
-- 首次运行 `npx playwright install chromium`，再运行 `npm run test:permissions`，对预览服务执行模拟 API 的权限检查。
+- `pnpm install --frozen-lockfile`：按锁文件安装依赖；`pnpm dev` 同时启动前后台，统一入口为 `127.0.0.1:5173`，`/api` 默认代理到 `127.0.0.1:8080`。
+- `pnpm type-check`：检查类型；`pnpm build` 检查类型并构建生产资源。
+- `pnpm preview`：启动两个应用预览，统一入口为 `127.0.0.1:5179`。
+- 首次运行 `pnpm exec playwright install chromium`，再运行 `pnpm test:permissions`，对预览服务执行模拟 API 的权限检查。
 
 ## 编码风格与命名
 

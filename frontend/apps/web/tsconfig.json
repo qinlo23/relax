@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "include": [
+    "src/**/*",
+    "auto-imports.d.ts",
+    "components.d.ts",
+    "../../packages/**/*.ts",
+    "../../packages/ui/src/**/*.vue"
+  ],
+  "compilerOptions": {
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
+  }
+}

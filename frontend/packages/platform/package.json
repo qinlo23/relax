@@ -1,0 +1,25 @@
+{
+  "name": "@kite/platform",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    "./auth": "./src/auth/index.ts",
+    "./directive": "./src/auth/directive.ts",
+    "./constants": "./src/constants.ts",
+    "./http": "./src/http/request.ts",
+    "./auth-api": "./src/auth-api.ts",
+    "./user-api": "./src/user-api.ts",
+    "./content-api": "./src/content-api.ts"
+  },
+  "scripts": {
+    "type-check": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@kite/contracts": "workspace:*",
+    "axios": "^1.15.0"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.25"
+  }
+}

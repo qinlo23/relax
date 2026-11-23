@@ -34,3 +34,5 @@ vite.config.ts.timestamp-*.mjs
 src/assets/
 dist.zip
 .rubbish/
+# Local browser verification artifacts
+.artifacts/
