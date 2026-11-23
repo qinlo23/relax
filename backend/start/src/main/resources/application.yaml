@@ -1,17 +1,21 @@
 spring:
   application:
     name: OWL
-  #  profiles:
-  #    active: dev          # 默认开发环境，可通过启动参数切换
+  profiles:
+    default: dev
 
-  config:
-    import:
-      - optional:nacos:infra.yaml?group=DEFAULT_GROUP&refreshEnabled=true
-      - optional:nacos:tools.yaml?group=DEFAULT_GROUP&refreshEnabled=true
-
-  cloud:
-    nacos:
-      server-addr: 192.168.166.128:8848
-      username: nacos
-      password: nacos
-      namespace: public
+  # 本地默认使用 application-dev.yml，无需连接 Nacos。
+  # 恢复远程配置时，在对应环境配置中启用 Nacos 并添加以下导入：
+  # config:
+  #   import:
+  #     - optional:nacos:infra.yaml?group=DEFAULT_GROUP&refreshEnabled=true
+  #     - optional:nacos:tools.yaml?group=DEFAULT_GROUP&refreshEnabled=true
+  # cloud:
+  #   nacos:
+  #     server-addr: ${NACOS_SERVER_ADDR}
+  #     username: ${NACOS_USERNAME}
+  #     password: ${NACOS_PASSWORD}
+  #     config:
+  #       namespace: ${NACOS_NAMESPACE:owl}
+  #     discovery:
+  #       namespace: ${NACOS_NAMESPACE:owl}
