@@ -1,85 +1,82 @@
 # owl 数据库目录
 
-本目录维护 `owl` 数据库的固定基线和增量版本。`modules/` 保留当前已确定的初始化基线，后续不再修改；所有新增表、改表、索引、约束、初始化数据和数据修正统一通过 `version/` 中的新 SQL 脚本维护。具体约束见 [AGENTS.md](AGENTS.md)。
+`owl.sql` 是新库初始化的完整基线，由原 `sql/` 中的模块脚本按依赖顺序合并而成。文件内按模块添加分隔注释，包含数据库、全部业务表、初始角色、账号及 28 项权限目录。
 
-## 当前规范
+## 初始化
 
-- 数据库：`owl`，字符集 `utf8mb4`，排序规则 `utf8mb4_0900_ai_ci`。
-- 表名：小写 snake_case、单数，不使用保留字。
-- 字段名：小写 snake_case，Java 属性使用 camelCase。
-- 反引号：不用于普通标识符；仅当字段是 MySQL 保留字或包含特殊字符时必须使用，优先通过改名避免。
-- 时间字段：统一为 `create_time` / `update_time`。
-- 主键：`BIGINT UNSIGNED AUTO_INCREMENT`；UUID 场景使用 `CHAR(36)`。
-- 索引：`idx_<table>_<column>`，唯一索引 `uk_<table>_<column>`，外键 `fk_<table>_<column>`。
-- `modules/` 中的现有 SQL 为固定基线，后续变更不得回写或合并到基线；已执行的版本脚本也不得改写，修正必须新增版本。
-- 详细命名规范见 [数据库表命名规范](../.docs/spec/naming/database-naming-convention.md)。
-
-## 增量版本规则
-
-- 新脚本统一放在 `version/`，命名为 `YYYYMMDD_NN_description.sql`，同一天的序号递增；已有历史脚本保留原名。
-- 脚本头部记录用途、适用的数据库状态、前置依赖、执行顺序、是否可重复执行及验证和回退方法。
-- 新建库先执行基线，再执行适用于该基线且尚未包含的增量版本；已有库只执行尚未应用的适用版本，按依赖顺序记录执行结果。
-- 不会因目录改名自动执行脚本；Docker 基线副本不通过修改来承载后续数据库变更。
-
-## 基线执行顺序
-
-新建库只需执行 `modules/` 中的基线，RBAC 已包含在内，无需执行 `version/` 中的旧升级脚本。每份模块 SQL 都明确 `USE owl`，可在不同客户端连接中依次执行。
-
-使用 MySQL 命令行可以通过统一入口一次执行（从仓库根目录开始）：
+要求 MySQL 8.4，数据库名为 `owl`，字符集为 `utf8mb4`，排序规则为 `utf8mb4_0900_ai_ci`。从仓库根目录执行：
 
 ```bash
-cd backend/database
-mysql -h 127.0.0.1 -u root -p < init.sql
+mysql -h 127.0.0.1 -u root -p < backend/.database/owl.sql
 ```
 
-`init.sql` 使用 MySQL 客户端 `SOURCE` 命令引用以下文件；若使用图形化数据库工具，先运行 `modules/00_schema.sql`，再按以下顺序运行模块文件，不要按文件名字母顺序批量执行。建表基线用于空库，重复执行会因表已存在而报错。
+图形化客户端可直接执行 `owl.sql` 全文。也可以进入 `backend/.database/` 后执行 `mysql -h 127.0.0.1 -u root -p < init.sql`；该入口使用 MySQL 客户端的 `SOURCE owl.sql` 命令。
 
-1. `modules/00_schema.sql`
-2. `modules/user_db.sql`
-3. `modules/user_blog.sql`
-4. `modules/user_gallery.sql`
-5. `modules/front_db.sql`
-6. `modules/ai_db.sql`
-7. `modules/price_db.sql`
-8. `modules/caishen_db.sql`
-9. `modules/user_init_data.sql`（开发环境示例账号、角色关系和权限目录；生产环境应单独准备账号与角色数据）
+本脚本用于空库，重复执行会因表已存在而失败，不会清空已有数据库，也不用于升级已有数据库。
 
-`user_init_data.sql` 内的权限目录是当前授权查询所需的基础数据，不能因为跳过示例账号而同时遗漏；生产初始化需保留该权限目录及有效的超级管理员角色和账号关系。
-`init.sql` 只引用当前有效基线，不执行归档文件或历史升级脚本。
+## 初始账号和角色
 
-## 模块说明
+| 账号（邮箱登录）  | 密码      | 角色                      |
+| ----------------- | --------- | ------------------------- |
+| admin@admin.com   | 123456qin | 超级管理员（SUPER_ADMIN） |
+| user@user.com     | 123456qin | 普通用户（USER）          |
+| 1693676136@qq.com | 123456qin | 普通用户（USER）          |
 
-| 文件 | 当前用途 |
-| --- | --- |
-| `00_schema.sql` | 创建并选中小写 schema `owl` |
-| `user_db.sql` | 用户、角色、地址、权限目录、用户角色关系、角色权限关系 |
-| `user_blog.sql` | user 模块拥有的博客文章、设置、教育经历、技能分类与技能项 |
-| `user_gallery.sql` | user 模块拥有的个人画廊 |
-| `front_db.sql` | admin 模块的首页焦点、特性、Hero 视频与菜单 |
-| `ai_db.sql` | AI 会话与消息；表名沿用 `agent_` 前缀 |
-| `price_db.sql` | 价格分类、物品、来源、地区、记录与媒体 |
-| `caishen_db.sql` | 基金、净值、关注、提醒与总结 |
-| `user_init_data.sql` | 开发示例账号、角色、用户角色关系及权限目录 |
+只初始化上述三个账号和两种内置角色，替代原来的管理员、商家、普通用户和客服示例数据。用户名与邮箱一致，手机号留空，密码字段存储 BCrypt 哈希。超级管理员由后端自动获得全部权限，普通用户不额外授予后台权限。
 
-## 废弃脚本与核对结果
+## 模块顺序
 
-以下文件已原样移入 `.rubbish/`，不参与初始化：
+1. 创建并选中数据库 `owl`。
+2. user：用户、角色、收货地址、权限及授权关系。
+3. user / blog：博客文章、设置、教育经历、技能分类与技能项。
+4. user / gallery：个人画廊。
+5. admin / front：首页焦点、特性、Hero 视频与菜单。
+6. ai：会话与消息。
+7. price：价格分类、物品、来源、地区、记录与媒体。
+8. caishen：基金、净值、关注、提醒与总结。
+9. 初始化角色、用户、用户角色关系和权限目录。
 
-- `blog_db.sql`：旧 mango 博客结构，已由 `modules/user_blog.sql` 替代；同时执行会重复创建四张表，且旧字段不符合当前后端。
-- `log_db.sql`：旧日志落库结构。当前 common-log 仅输出日志，不写入这三张日志表。
-- `20261114_user_rbac.sql`：旧库回填与结构转换脚本，最终结构和权限数据已整合进当前基线，不再参与新库初始化。
-- `user_permission_seed.sql`：权限目录与 `modules/user_init_data.sql` 中的 SQL 完全相同，避免维护两个相同入口。
+## 后续变更
 
-`.rubbish/` 沿用本目录 `.gitignore` 的忽略规则，仅保留在本地；历史已提交文件仍可通过 Git 查阅。
-详细核对结论见 [数据库与后端一致性核对](AUDIT.md)。
+本次按明确要求重新整理初始化基线。后续数据库变更仍统一新增到 `version/YYYYMMDD_NN_description.sql`，不回写基线或已执行的版本脚本。已有库仅执行适用且尚未应用的版本。具体规则见 [AGENTS.md](AGENTS.md)。
 
-## RBAC 基线
+`.rubbish/` 保留本地归档，不参与初始化；[AUDIT.md](AUDIT.md) 是此前按模块维护时的历史核对记录。Docker 中独立维护的历史 SQL 副本未随本次合并更新。
 
-`modules/user_db.sql` 已直接定义 `role_code`、`built_in`、`auth_version`，以及 `user_permission`、`user_account_role`、`user_role_permission` 三张表；`user_account` 不再包含旧的 `role_name` 关联列。
-`modules/user_init_data.sql` 初始化内置 `USER` / `SUPER_ADMIN` 角色、示例用户角色关系和 28 项权限目录。新库不需要执行历史角色回填或删除旧列的 ALTER 语句。
-旧的 `version/20261114_user_rbac.sql` 已原样归档至 `.rubbish/`；后续变更仍按 `version/` 增量规则管理。授权行为见 [后台权限说明](../RBAC.md)。
+主应用通过 Nacos 导入连接配置，启动前需确保 JDBC URL 中的数据库名为小写 `owl`。
 
-## 连接配置
+# 数据库维护规则
 
-MySQL schema 名为小写 `owl`；仓库内 JDBC 示例、测试连接和代码生成器已同步。主应用通过 Nacos 导入外部连接配置，实际启动前需将其中 JDBC URL 的数据库名也设为 `owl`。应用名称、Maven 坐标及 Nacos namespace 的 `OWL` 是独立标识，保持原值。
-本次只整理新库脚本，不自动将已有 `OWL` 数据库改名或迁移数据。
+本文件适用于 `backend/.database/` 及其子目录。维护数据库相关代码、文档和发布流程时，也应遵循以下基线与版本约定。
+
+## 固定基线
+
+- `backend/.database/owl.sql` 是固定初始化基线，保留原样。
+- 后续功能开发、缺陷修复、结构调整不得修改、覆盖、删除该基线文件，也不得将增量变更并入该文件。
+- 不将版本脚本中的变更回写、合并到基线。只有用户明确要求重新建立或调整基线时，才可在该明确范围内修改。
+- `backend/.database/owl.sql` 创建并选中小写 schema `owl`；各模块脚本显式使用 `owl`。
+- `backend/.database/init.sql` 通过 MySQL 客户端 SOURCE 命令执行 owl.sql，不作为后续增量变更的入口。
+
+## 增量变更
+
+- 所有后续数据库变更统一新增到 `backend/.database/version/`，不再使用 `backend/.database/migrations/`。
+- 变更包括新增表、改表、字段、索引、约束、视图，以及权限目录、种子数据、初始化数据和存量数据修正。
+- 新脚本使用 `YYYYMMDD_NN_description.sql` 命名；日期使用项目当前日期，同一天序号递增且不可重复，描述体现具体用途。已有历史脚本保留原名。
+- 已执行或已发布的版本脚本保持不变；修正它们的问题时新增后续版本，不改写历史。
+- 每个脚本头部写明变更用途、适用的基线或数据库状态、前置版本依赖、执行顺序、是否可重复执行、验证方式和回退方法。
+- 沿用现有 MySQL 版本、字符集和数据库命名约定。MySQL DDL 可能自动提交，不将外层事务视为整份脚本的回滚保证。
+
+## 初始化与升级
+
+- 新建库可通过 `init.sql` 一次执行当前基线，或直接执行 `owl.sql`；后续再执行适用且尚未包含的增量版本。
+- 已有库仅执行尚未应用且适用于当前数据库状态的版本；执行时记录脚本名、顺序和结果，避免重复执行非幂等脚本。
+- 当前 `owl.sql` 基线已包含 RBAC 最终结构与初始化数据；旧 `20261114_user_rbac.sql` 已归档至 `.rubbish/`，不参与新库初始化。
+- 不为承载后续变更而改写 Docker 初始化基线副本；后续变更仍以 `backend/.database/version/` 的增量脚本作为升级来源。
+- 目录和文档维护本身不代表需要执行数据库脚本，不自动修改运行中的数据库。
+
+## 当前开发阶段与验证
+
+- 当前项目处于探索性开发阶段，可以为更好的方案进行破坏性变更；默认不维护旧表结构、旧数据兼容、历史数据库快照或迁移回归测试体系。
+- 保持 `owl.sql` 固定基线、后续变更放入 `version/` 的目录约定；未发布、未执行的开发版本可以随方案调整。
+- 不主动新增 `backend/.database/tests/`、历史结构 fixtures 或专用数据库测试容器。只有任务明确需要历史兼容或数据迁移保障时，再按实际需要引入。
+- 数据库变更同步更新涉及的业务代码、SQL 路径引用和说明，按当前功能与关键约束做适度验证。
+- 仅删除测试文件、重命名目录或更新文档时，检查引用和文件一致性即可，不需要重新运行无关的业务测试。

@@ -27,11 +27,11 @@
 | `GET /api/admin/role-do/{id}/permissions` | 已分配的权限编码列表 |
 | `PUT /api/admin/role-do/{id}/permissions` | `{ "permissions": ["feature:read"] }`，整体替换，空列表清空授权 |
 
-旧的 `/user-do/{id}/role` 已移除。角色返回值增加 `roleCode` 和 `builtIn`。当前基线的权限目录见 `database/modules/user_init_data.sql`，其中包含当前 28 项权限目录；后续权限目录变更统一新增到 `database/version/`，不修改基线或历史版本；角色管理入口由 SUPER_ADMIN 身份决定，不开放可委派的角色管理权限。
+旧的 `/user-do/{id}/role` 已移除。角色返回值增加 `roleCode` 和 `builtIn`。当前基线的权限目录见 `.database/owl.sql`，其中包含当前 28 项权限目录；后续权限目录变更统一新增到 `.database/version/`，不修改基线或历史版本；角色管理入口由 SUPER_ADMIN 身份决定，不开放可委派的角色管理权限。
 
 ## 新库初始化与发布
 
-1. 从仓库根目录进入 `backend/database/`，执行 `mysql -h 127.0.0.1 -u root -p < init.sql`；也可按数据库 README 顺序执行 `modules/` 中的 SQL，先运行 `00_schema.sql`。
+1. 从仓库根目录进入 `backend/.database/`，执行 `mysql -h 127.0.0.1 -u root -p < init.sql`；也可直接执行 `owl.sql`。
 2. `user_db.sql` 已直接创建完整 RBAC 结构；`user_init_data.sql` 写入内置角色、示例账号关系和 28 项权限，无需历史角色回填脚本。旧 `20261114_user_rbac.sql` 已归档，不作为新库初始化或现有环境升级入口。
 3. 将实际 JDBC 配置的 schema 设为 `owl`，部署后端与前端，验证管理员登录、角色分配、只读角色和普通用户业务；观察授权日志及 401/403。
 
