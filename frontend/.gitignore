@@ -11,19 +11,6 @@ dist/
 # Temp & backup
 *.tmp
 
-# Agent
-.claude/
-.codex/
-.trae/
-
-
-
-# 自定义
-example/
-frontend-api.md
-AGENTS.md
-CLOUDE.md
-.prettierrc
 
 # 自动生成的文件（不提交）
 auto-imports.d.ts
@@ -31,8 +18,3 @@ components.d.ts
 tsconfig.tsbuildinfo
 *.tsbuildinfo
 vite.config.ts.timestamp-*.mjs
-src/assets/
-dist.zip
-.rubbish/
-# Local browser verification artifacts
-.artifacts/
